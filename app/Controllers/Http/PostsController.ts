@@ -7,7 +7,9 @@ import {
 
 export default class PostsController {
   public async index ({}: HttpContextContract) {
-    const posts = await Post.query().orderBy('id');
+    const posts = await Post.query()
+      .orderBy('id', 'asc')
+      .preload('user');
 
     return posts;
   }

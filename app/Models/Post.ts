@@ -6,6 +6,7 @@ import {
   BelongsTo
 } from '@ioc:Adonis/Lucid/Orm';
 import User from './User';
+import { CherryPick } from '@ioc:Adonis/Lucid/Model';
 
 export default class Post extends BaseModel {
   @column({ isPrimary: true })
@@ -17,15 +18,38 @@ export default class Post extends BaseModel {
   @column()
   public content: string
 
-  @column()
+  @column({ serializeAs: null })
   public userId: number
 
   @belongsTo(() => User)
   public user: BelongsTo<typeof User>
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({
+    autoCreate: true,
+    serialize: (value: DateTime) =>{
+      return value.toFormat('dd/MM/yyyy HH:mm:ss')
+    }
+  })
   public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({
+    autoCreate: true,
+    autoUpdate: true,
+    serialize: (value: DateTime) =>{
+      return value.toFormat('dd/MM/yyyy HH:mm:ss')
+    }
+  })
   public updatedAt: DateTime
+
+  public serialize(cherryPick?: CherryPick) {
+    return {
+      ...this.serializeAttributes(cherryPick?.fields, false),
+      ...this.serializeComputed(cherryPick?.fields),
+      ...this.serializeRelations({
+        user: {
+          fields: ['id', 'email', 'firstName']
+        }
+      }, false)
+    }
+  }
 }
